@@ -6,6 +6,11 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.annotation.Bean;
 
+import com.elwan.microservices.zuulapigateway.filter.MyErrorFilter;
+import com.elwan.microservices.zuulapigateway.filter.MyPostFilter;
+import com.elwan.microservices.zuulapigateway.filter.MyPreFilter;
+import com.elwan.microservices.zuulapigateway.filter.MyRouteFilter;
+
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableZuulProxy

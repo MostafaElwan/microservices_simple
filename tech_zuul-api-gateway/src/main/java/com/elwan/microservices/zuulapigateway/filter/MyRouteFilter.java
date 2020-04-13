@@ -1,4 +1,4 @@
-package com.elwan.microservices.zuulapigateway;
+package com.elwan.microservices.zuulapigateway.filter;
 
 import com.netflix.zuul.ZuulFilter;
 
