@@ -1,0 +1,20 @@
+h1, h2 {
+    color: #00468b;
+}
+ 
+a {
+    color: #00468b;
+}
+ 
+table {
+    border-collapse: collapse;
+}
+ 
+table th, table td {
+    padding: 5px;
+}
+ 
+.error {
+    color: red;
+    font-weight: bold;
+}
