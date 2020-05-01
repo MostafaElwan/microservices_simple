@@ -1,0 +1,15 @@
+server:
+    port: 8765
+
+spring:
+    application:
+        name: eureka-discovery-service
+
+eureka:
+    client:
+        register-with-eureka: false
+        fetch-registry: false
+
+logging.level:
+    org.springframework.retry: trace
+    com.netflix.discovery: trace

@@ -1,0 +1,24 @@
+server:
+    port: 8888
+
+spring:
+    application:
+        name: cloud-config-server
+    cloud:
+        config:
+            server:
+                bootstrap: true
+                git:
+                    uri: https://github.com/MostafaElwan/microservices_simple
+                    searchPaths: configurations,configurations/{application}
+                    #username: myusrnm
+                    #password: mypwd
+                    cloneOnStart: true
+
+eureka:
+    client:
+        serviceUrl:
+            defaultZone: http://${EUREKA_SERVER_IP_PORT:localhost:8761}/eureka
+    instance:
+        prefer-ip-address: true
+        lease-renewal-interval-in-seconds: 10
