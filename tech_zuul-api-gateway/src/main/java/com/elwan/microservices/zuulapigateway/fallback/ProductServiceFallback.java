@@ -10,7 +10,7 @@ import com.netflix.hystrix.exception.HystrixTimeoutException;
 @Component
 class ProductServiceFallback implements FallbackProvider {
 
-    private static final String DEFAULT_MESSAGE = "Products information is not available.";
+    private static final String DEFAULT_MESSAGE = "Products information are not available.";
 
     @Override
     public String getRoute() {
