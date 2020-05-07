@@ -1,0 +1,77 @@
+version: '3'
+
+networks:
+    elwannw:
+
+services:
+
+#-------------------  Databases section  -----------------------------
+
+    mongo-db:
+        image: mongo
+        container_name: mongo-db
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: melwan
+            MONGO_INITDB_ROOT_PASSWORD: melwan123
+            MONGO_INITDB_DATABASE: customers_db
+        volumes:
+            - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+        ports:
+            - 27020:27017
+        networks:
+            - elwannw
+
+
+#-------------------  Technical Services section  -----------------------------
+
+    eureka-discovery-service:
+        image: mostafaelwan/mcsv-smpl-eureka-server:latest
+        container_name: eureka-discovery-service
+        ports:
+            - 8765:8765
+        networks:
+            - elwannw
+
+    config-server:
+        image: mostafaelwan/mcsv-smpl-config-server:latest
+        container_name: config-server
+        depends_on:
+            - eureka-discovery-service
+        environment:
+            - EUREKA_SERVER_IP_PORT=eureka-discovery-service:8765
+        ports:
+            - 8888:8888
+        volumes:
+            - ./config-server/config:/app/config
+        networks:
+            - elwannw
+
+    zuul-proxy:
+        image: mostafaelwan/mcsv-smpl-zuul-proxy:latest
+        container_name: zuul-proxy
+        depends_on:
+            - config-server
+        command: ["./wait-for.sh", "config-server:8888", "--", "java","-jar","app.jar"]
+        environment:
+            - EUREKA_SERVER_IP_PORT=eureka-discovery-service:8765
+        ports:
+            - 8080:8080
+        networks:
+            - elwannw
+
+
+#-------------------  Business Services section  -----------------------------
+
+    customer-service:
+        image: mostafaelwan/mcsv-smpl-customer-service:latest
+        container_name: customer-service
+        depends_on:
+            - mongo-db
+            - config-server
+        command: ["./wait-for.sh", "config-server:8888", "--", "./wait-for.sh", "mongo-db:27017", "--", "java","-jar","app.jar"]
+        environment:
+            - EUREKA_SERVER_IP_PORT=eureka-discovery-service:8765
+        ports:
+            - 8092:8092
+        networks:
+            - elwannw
