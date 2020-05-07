@@ -25,6 +25,7 @@ services:
 #-------------------  Technical Services section  -----------------------------
 
     eureka-discovery-service:
+        build: ../../tech_eureka-discovery-service
         image: mostafaelwan/mcsv-smpl-eureka-server:latest
         container_name: eureka-discovery-service
         ports:
@@ -33,6 +34,7 @@ services:
             - elwannw
 
     config-server:
+        build: ../../tech_cloud-config-server
         image: mostafaelwan/mcsv-smpl-config-server:latest
         container_name: config-server
         depends_on:
@@ -47,6 +49,7 @@ services:
             - elwannw
 
     zuul-proxy:
+        build: ../../tech_zuul-api-gateway
         image: mostafaelwan/mcsv-smpl-zuul-proxy:latest
         container_name: zuul-proxy
         depends_on:
@@ -63,6 +66,7 @@ services:
 #-------------------  Business Services section  -----------------------------
 
     customer-service:
+        build: ../../bsns_customer-service
         image: mostafaelwan/mcsv-smpl-customer-service:latest
         container_name: customer-service
         depends_on:
