@@ -16,6 +16,7 @@ services:
             MONGO_INITDB_DATABASE: customers_db
         volumes:
             - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+            - ~/data:/data/db
         ports:
             - 27020:27017
         networks:
