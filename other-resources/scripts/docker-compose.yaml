@@ -3,6 +3,10 @@ version: '3'
 networks:
     elwannw:
 
+volumes:
+    mariadb-datavolume:
+    postgresdb-datavolume:
+
 services:
 
 #-------------------  Databases section  -----------------------------
@@ -22,6 +26,36 @@ services:
         networks:
             - elwannw
 
+    maria-db:
+        image: mariadb:latest
+        container_name: maria-db
+        environment:
+            MYSQL_ROOT_PASSWORD: 'd@ysnetisalat'
+            MYSQL_DATABASE: 'products_db'
+            MYSQL_USER: 'melwan'
+            MYSQL_PASSWORD: 'melwan123'
+        ports:
+            - '3366:3306'
+        command: --init-file /data/application/init.sql
+        volumes:
+            - mariadb-datavolume:/var/lib/mysql
+            - ./maria-init.sql:/data/application/init.sql
+        networks:
+            - elwannw
+
+    postgres-db:
+        image: postgres:latest
+        container_name: postgres-db
+        environment:
+            - POSTGRES_DB=orders_db
+            - POSTGRES_USER=melwan
+            - POSTGRES_PASSWORD=melwan123
+        ports:
+            - '5445:5432'
+        volumes:
+            - postgresdb-datavolume:/var/lib/postgresql/data
+        networks:
+            - elwannw
 
 #-------------------  Technical Services section  -----------------------------
 
@@ -78,5 +112,51 @@ services:
             - EUREKA_SERVER_IP_PORT=eureka-discovery-service:8765
         ports:
             - 8092:8092
+        networks:
+            - elwannw
+
+    product-service:
+        build: ../../bsns_product-service
+        image: mostafaelwan/mcsv-smpl-product-service:latest
+        container_name: product-service
+        depends_on:
+            - maria-db
+            - config-server
+        command: ["./wait-for.sh", "config-server:8888", "--", "./wait-for.sh", "maria-db:3306", "--", "java","-jar","app.jar"]
+        environment:
+            - EUREKA_SERVER_IP_PORT=eureka-discovery-service:8765
+        ports:
+            - 8091:8091
+        networks:
+            - elwannw
+
+    order-service:
+        build: ../../bsns_order-service
+        image: mostafaelwan/mcsv-smpl-order-service:latest
+        container_name: order-service
+        depends_on:
+            - postgres-db
+            - config-server
+        command: ["./wait-for.sh", "config-server:8888", "--", "./wait-for.sh", "postgres-db:5432", "--", "java","-jar","app.jar"]
+        environment:
+            - EUREKA_SERVER_IP_PORT=eureka-discovery-service:8765
+        ports:
+            - 8093:8093
+        networks:
+            - elwannw
+
+    eshop-service:
+        build: ../../bsns_eshop-service
+        image: mostafaelwan/mcsv-smpl-eshop-service:latest
+        container_name: eshop-service
+        depends_on:
+            - customer-service
+            - product-service
+            - order-service
+        command: ["./wait-for.sh", "customer-service:8092", "--", "./wait-for.sh", "product-service:8091", "--", "./wait-for.sh", "order-service:8093", "--", "java","-jar","app.jar"]
+        environment:
+            - EUREKA_SERVER_IP_PORT=eureka-discovery-service:8765
+        ports:
+            - 8090:8090
         networks:
             - elwannw
