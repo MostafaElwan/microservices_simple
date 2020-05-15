@@ -1,11 +1,15 @@
 version: '3'
 
+
 networks:
     elwannw:
 
+
 volumes:
+    mongodb-datavolume:
     mariadb-datavolume:
     postgresdb-datavolume:
+
 
 services:
 
@@ -20,7 +24,7 @@ services:
             MONGO_INITDB_DATABASE: customers_db
         volumes:
             - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-            - ~/data:/data/db
+            - mongodb-datavolume:/data/db
         ports:
             - 27020:27017
         networks:
@@ -59,6 +63,14 @@ services:
 
 #-------------------  Technical Services section  -----------------------------
 
+    zipkin-server:
+        image: openzipkin/zipkin
+        container_name: zipkin-server
+        ports:
+            - "9411:9411"
+        networks:
+            - elwannw
+
     eureka-discovery-service:
         build: ../../tech_eureka-discovery-service
         image: mostafaelwan/mcsv-smpl-eureka-server:latest
@@ -80,6 +92,20 @@ services:
             - 8888:8888
         volumes:
             - ./config-server/config:/app/config
+        networks:
+            - elwannw
+
+    admin-server:
+        build: ../../tech_spring-admin-server
+        image: mostafaelwan/mcsv-smpl-admin-server:latest
+        container_name: admin-server
+        depends_on:
+            - config-server
+        command: ["./wait-for.sh", "config-server:8888", "--", "java","-jar","app.jar"]
+        environment:
+            - EUREKA_SERVER_IP_PORT=eureka-discovery-service:8765
+        ports:
+            - 9999:9999
         networks:
             - elwannw
 
@@ -107,9 +133,10 @@ services:
         depends_on:
             - mongo-db
             - config-server
-        command: ["./wait-for.sh", "config-server:8888", "--", "./wait-for.sh", "mongo-db:27017", "--", "java","-jar","app.jar"]
+        command: ["./wait-for.sh", "admin-server:9999", "--", "./wait-for.sh", "mongo-db:27017", "--", "java","-jar","app.jar"]
         environment:
             - EUREKA_SERVER_IP_PORT=eureka-discovery-service:8765
+            - ZIPKIN_SERVER_IP_PORT=zipkin-server:9411
         ports:
             - 8092:8092
         networks:
@@ -122,9 +149,10 @@ services:
         depends_on:
             - maria-db
             - config-server
-        command: ["./wait-for.sh", "config-server:8888", "--", "./wait-for.sh", "maria-db:3306", "--", "java","-jar","app.jar"]
+        command: ["./wait-for.sh", "admin-server:9999", "--", "./wait-for.sh", "maria-db:3306", "--", "java","-jar","app.jar"]
         environment:
             - EUREKA_SERVER_IP_PORT=eureka-discovery-service:8765
+            - ZIPKIN_SERVER_IP_PORT=zipkin-server:9411
         ports:
             - 8091:8091
         networks:
@@ -137,9 +165,10 @@ services:
         depends_on:
             - postgres-db
             - config-server
-        command: ["./wait-for.sh", "config-server:8888", "--", "./wait-for.sh", "postgres-db:5432", "--", "java","-jar","app.jar"]
+        command: ["./wait-for.sh", "admin-server:9999", "--", "./wait-for.sh", "postgres-db:5432", "--", "java","-jar","app.jar"]
         environment:
             - EUREKA_SERVER_IP_PORT=eureka-discovery-service:8765
+            - ZIPKIN_SERVER_IP_PORT=zipkin-server:9411
         ports:
             - 8093:8093
         networks:
@@ -156,6 +185,7 @@ services:
         command: ["./wait-for.sh", "customer-service:8092", "--", "./wait-for.sh", "product-service:8091", "--", "./wait-for.sh", "order-service:8093", "--", "java","-jar","app.jar"]
         environment:
             - EUREKA_SERVER_IP_PORT=eureka-discovery-service:8765
+            - ZIPKIN_SERVER_IP_PORT=zipkin-server:9411
         ports:
             - 8090:8090
         networks:
