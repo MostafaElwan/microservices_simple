@@ -15,6 +15,9 @@ spring:
                 service-id: cloud-config-server
             fail-fast: true
             retry:
-                max-attempts: 60            
+                max-attempts: 60
     profiles:
         active: dev
+
+    zipkin:
+        base-url: http://${ZIPKIN_SERVER_IP_PORT:localhost:9411}/
