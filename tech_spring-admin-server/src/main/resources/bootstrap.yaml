@@ -1,0 +1,24 @@
+eureka:
+    client:
+        serviceUrl:
+            defaultZone: http://${EUREKA_SERVER_IP_PORT:localhost:8761}/eureka
+        registryFetchIntervalSeconds: 5
+        register-with-eureka: false
+    instance:
+        #prefer-ip-address: true
+        leaseRenewalIntervalInSeconds: 10
+        #lease-expiration-duration-in-seconds: 5
+        health-check-url-path: /actuator/health
+        metadata-map:
+            startup: ${random.int}
+
+spring:
+    cloud.config:
+            discovery:
+                enabled: true
+                service-id: cloud-config-server
+            fail-fast: true
+            retry:
+                max-attempts: 60            
+    profiles:
+        active: dev

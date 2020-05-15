@@ -1,0 +1,13 @@
+spring:
+    application.name: spring-admin-server
+    boot.admin.discovery.ignored-services: zuul-api-gateway
+server.port: ${service.port}
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: "*"  
+    endpoint:
+        health:
+            show-details: ALWAYS
