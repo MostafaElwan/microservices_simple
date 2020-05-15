@@ -21,6 +21,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.validation.annotation.Validated;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Data;
  
 @Validated
@@ -49,7 +51,8 @@ public class Category implements Serializable {
     @Column(nullable = false)
     @LastModifiedDate
     private Date updatedAt;
-    
+ 
+    @JsonIgnore
     @OneToMany(targetEntity = Product.class, 
     		mappedBy = "category", 
     		orphanRemoval = false, 
